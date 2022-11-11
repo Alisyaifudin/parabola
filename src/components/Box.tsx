@@ -1,25 +1,17 @@
 import { useRef, useState } from "react";
-import { BoxBufferGeometryProps, BoxGeometryProps, useFrame } from "@react-three/fiber";
-import { BoxGeometry, Mesh } from "three";
+import { BoxBufferGeometryProps } from "@react-three/fiber";
+import { Mesh } from "three";
 
-function Box(props: BoxBufferGeometryProps) {
-	const mesh = useRef<Mesh>(null);
-	const [hovered, setHover] = useState(false);
-	const [active, setActive] = useState(false);
-	useFrame((state, delta) => {
-		if (mesh.current) mesh.current.rotation.x += 0.01;
-	});
+type Size = [width?: number | undefined, height?: number | undefined, depth?: number | undefined, widthSegments?: number | undefined, heightSegments?: number | undefined, depthSegments?: number | undefined] | undefined
+
+type BoxProps = BoxBufferGeometryProps & {color?: string, size?: Size}
+
+function Box({color = "gray", size = [1,1,1], ...props}: BoxProps) {
+	const ref = useRef<Mesh>(null);
 	return (
-		<mesh
-			{...props}
-			ref={mesh}
-			scale={active ? 1.5 : 1}
-			onClick={(event) => setActive(!active)}
-			onPointerOver={(event) => setHover(true)}
-			onPointerOut={(event) => setHover(false)}
-		>
-			<boxGeometry args={[1, 1, 1]} />
-			<meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+		<mesh {...props} ref={ref}>
+			<boxGeometry args={size} />
+			<meshStandardMaterial color={color} />
 		</mesh>
 	);
 }
