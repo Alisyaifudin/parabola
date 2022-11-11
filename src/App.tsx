@@ -56,7 +56,7 @@ function App() {
 			return;
 		}
 		const value = Number(e.target.value);
-		if (value === NaN || value < 0 || value > 100) return;
+		if (value < 0 || value > 100) return;
 		setAirResistance(value);
 	};
 	const handleRestitutionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +65,7 @@ function App() {
 			return;
 		}
 		const value = Number(e.target.value);
-		if (value === NaN || value < 0 || value > 100) return;
+		if (value < 0 || value > 100) return;
 		setRestitution(value);
 	};
 	const handleNoiseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +74,7 @@ function App() {
 			return;
 		}
 		const value = Number(e.target.value);
-		if (value === NaN || value < 0 || value > 100) return;
+		if (value < 0 || value > 100) return;
 		setNoise(value);
 	};
 	return (

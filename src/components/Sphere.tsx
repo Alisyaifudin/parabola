@@ -38,8 +38,8 @@ function Sphere({
 	noise,
 	...props
 }: SphereProps) {
-	const randomNoiseX = Math.random() * noise/50;
-	const randomNoiseY = Math.random() * noise/50;
+	const randomNoiseX = (Math.random() * noise) / 50;
+	const randomNoiseY = (Math.random() * noise) / 50;
 	const ref = useRef<Mesh>(null);
 	useFrame((state, delta) => {
 		if (!ref.current) return;
@@ -63,21 +63,21 @@ function Sphere({
 		const [dvx, dvy, dvz] = [ax * delta, ay * delta, az * delta];
 		const [dx, dy, dz] = [vx * delta, vy * delta, vz * delta];
 		const radius = size[0] || 1;
-		
-		// ref.current.position.set(5, 4, 0);
-		
 		if (y + dy - radius < 0 && vy + dvy < 0) {
-			ref.current.userData.velocity = [vx + dvx, -1 * (vy + dvy) * restitution, vz + dvz];
+			let damp = 1;
+			if (vy + dvy > -0.6) damp = 0.1;
+
+			ref.current.userData.velocity = [vx + dvx, -1 * vy * restitution * damp, vz + dvz];
 			ref.current.position.set(x + dx, radius, z + dz);
 			ref.current.userData.position = [x + dx, radius, z + dz];
 		} else if (x + dx - radius < wall[0] && vx + dvx < 0) {
-			ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
-			ref.current.position.set(wall[0]+radius, y + dy, z + dz);
-			ref.current.userData.position = [wall[0]+radius, y+dy, z + dz];
+			ref.current.userData.velocity = [-1 * vx * restitution, vy + dvy, vz + dvz];
+			ref.current.position.set(wall[0] + radius, y + dy, z + dz);
+			ref.current.userData.position = [wall[0] + radius, y + dy, z + dz];
 		} else if (x + dx + radius > wall[1] && vx + dvx > 0) {
-			ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
-			ref.current.position.set(wall[1]-radius, y + dy, z + dz);
-			ref.current.userData.position = [wall[1]-radius, y+dy, z + dz];
+			ref.current.userData.velocity = [-1 * vx * restitution, vy + dvy, vz + dvz];
+			ref.current.position.set(wall[1] - radius, y + dy, z + dz);
+			ref.current.userData.position = [wall[1] - radius, y + dy, z + dz];
 		} else {
 			ref.current.userData.velocity = [vx + dvx, vy + dvy, vz + dvz];
 			ref.current.position.set(x + dx, y + dy, z + dz);
@@ -89,7 +89,11 @@ function Sphere({
 		<mesh
 			{...props}
 			position={new Vector3(position[0], position[1], position[2])}
-			userData={{ velocity: [velocity[0]+randomNoiseX, velocity[1]+randomNoiseY, velocity[2]], position, below: false }}
+			userData={{
+				velocity: [velocity[0] + randomNoiseX, velocity[1] + randomNoiseY, velocity[2]],
+				position,
+				below: false,
+			}}
 			ref={ref}
 		>
 			<sphereGeometry args={size} />
