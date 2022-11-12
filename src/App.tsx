@@ -8,6 +8,7 @@ import { Physics } from "@react-three/cannon";
 import Sphere from "./components/Sphere";
 import Slider from "./components/Slider";
 import Cone from "./components/Cone";
+import Clock from "./components/Clock";
 
 // const initial = {
 // 	ball: { position: [5, 4, 0], velocity: [-5, 5, 0] },
@@ -15,7 +16,7 @@ import Cone from "./components/Cone";
 
 function App() {
 	const [paused, setPaused] = useState(true);
-	const [power, setPower] = useState(5);
+	const [power, setPower] = useState(10);
 	const [angle, setAngle] = useState(45);
 	const [horizontal, setHorizontal] = useState(5);
 	const [vertical, setVertical] = useState(4);
@@ -24,24 +25,20 @@ function App() {
 	const [airResistance, setAirResistance] = useState<number | "">(10);
 	const [restitution, setRestitution] = useState<number | "">(80);
 	const [noise, setNoise] = useState<number | "">(50);
-	const initialBall = {
+	const ball = {
 		position: [horizontal, vertical, 0],
 		velocity: [
-			-power * Math.cos((angle * Math.PI) / 180),
-			power * Math.sin((angle * Math.PI) / 180),
+			-(power + 1) * Math.cos((angle * Math.PI) / 180),
+			(power + 1) * Math.sin((angle * Math.PI) / 180),
 			0,
 		],
 	};
-	const ball = useMemo(
-		() => ({
-			...initialBall,
-		}),
-		[initialBall]
-	);
 	const handleSelect = (option: "graph" | "experiment") => () => {
 		setIsGraph(option === "graph");
 	};
-	const start = () => setPaused(false);
+	const start = () => {
+		setPaused(false);
+	};
 	const reset = () => {
 		setPaused(true);
 	};
@@ -127,7 +124,7 @@ function App() {
 							position={ball.position}
 							velocity={ball.velocity}
 							noise={noise !== "" ? noise : 0}
-							restitution={restitution !== "" ? restitution / 100 : 0}
+							restitution={restitution !== "" ? restitution / 100  : 0}
 							wall={[-5, 13.5]}
 							airResistance={airResistance !== "" ? airResistance / 100 : 0}
 						/>
@@ -170,12 +167,12 @@ function App() {
 					/>
 				</div>
 				<div className="flex flex-col gap-2 w-72">
-					<label htmlFor="angle">Elevation</label>
+					<label htmlFor="angle">Elevation Angle</label>
 					<Slider
 						disabled={!paused}
-						min={-89}
+						min={-90}
 						name="angle"
-						max={89}
+						max={90}
 						value={angle}
 						onChange={handleAngleChange}
 					/>
@@ -183,7 +180,7 @@ function App() {
 				<div className="flex flex-col gap-2">
 					<label htmlFor="horizontal">Horizontal Distance</label>
 					<Slider
-						min={0}
+						min={-4.5}
 						disabled={!paused}
 						name="horizontal"
 						max={10}

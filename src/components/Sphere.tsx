@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SphereBufferGeometryProps, useFrame } from "@react-three/fiber";
 import { Mesh, Vector3 } from "three";
-
+import { randn_bm } from "../utils/convenience";
 type Size =
 	| [
 			radius?: number | undefined,
@@ -23,6 +23,7 @@ type SphereProps = SphereBufferGeometryProps & {
 	wall: number[];
 	airResistance: number;
 	noise: number;
+	onCollision?: (sphere?: SphereProps) => void;
 };
 
 const g = 9.8; // m/s^2
@@ -36,15 +37,17 @@ function Sphere({
 	wall,
 	airResistance,
 	noise,
+	onCollision,
 	...props
 }: SphereProps) {
-	const randomNoiseX = (Math.random() * noise) / 50;
-	const randomNoiseY = (Math.random() * noise) / 50;
+	const randomNoiseX = randn_bm(0, noise / 100);
+	const randomNoiseY = randn_bm(0, noise / 100);
 	const ref = useRef<Mesh>(null);
+	console.log(ref?.current?.userData.velocity);
+
 	useFrame((state, delta) => {
 		if (!ref.current) return;
 		if (paused) {
-			// console.log("HAH?", position)
 			ref.current.position.x = position[0];
 			ref.current.position.y = position[1];
 			ref.current.position.z = position[2];
@@ -61,29 +64,32 @@ function Sphere({
 			-1 * vz * airResistance,
 		];
 		const [dvx, dvy, dvz] = [ax * delta, ay * delta, az * delta];
-		const [dx, dy, dz] = [vx * delta, vy * delta, vz * delta];
+		const [dx, dy, dz] = [(vx + dvx) * delta, (vy + dvy) * delta, (vz + dvz) * delta];
 		const radius = size[0] || 1;
-		if (y + dy - radius < 0 && vy + dvy < 0) {
-			let damp = 1;
-			if (vy + dvy > -0.6) damp = 0.1;
-
-			ref.current.userData.velocity = [vx + dvx, -1 * vy * restitution * damp, vz + dvz];
-			ref.current.position.set(x + dx, radius, z + dz);
-			ref.current.userData.position = [x + dx, radius, z + dz];
-		} else if (x + dx - radius < wall[0] && vx + dvx < 0) {
-			ref.current.userData.velocity = [-1 * vx * restitution, vy + dvy, vz + dvz];
-			ref.current.position.set(wall[0] + radius, y + dy, z + dz);
-			ref.current.userData.position = [wall[0] + radius, y + dy, z + dz];
-		} else if (x + dx + radius > wall[1] && vx + dvx > 0) {
-			ref.current.userData.velocity = [-1 * vx * restitution, vy + dvy, vz + dvz];
-			ref.current.position.set(wall[1] - radius, y + dy, z + dz);
-			ref.current.userData.position = [wall[1] - radius, y + dy, z + dz];
+		const hitLeft = x + dx - radius < wall[0] && vx + dvx < 0;
+		const hitRight = x + dx + radius > wall[1] && vx + dvx > 0;
+		const hitBottom = y + dy - radius < 0 && vy + dvy < 0;
+		if (hitLeft || hitRight || hitBottom) {
+			if (hitBottom) {
+				ref.current.userData.velocity = [vx + dvx, -1 * (vy + dvy) * restitution, vz + dvz];
+				ref.current.position.set(x + dx, y, z + dz);
+				ref.current.userData.position = [x + dx, y, z + dz];
+			}
+			if (hitLeft) {
+				ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
+				ref.current.position.set(x, y + dy, z + dz);
+				ref.current.userData.position = [x, y + dy, z + dz];
+				return;
+			} else if (hitRight) {
+				ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
+				ref.current.position.set(x, y + dy, z + dz);
+				ref.current.userData.position = [x, y + dy, z + dz];
+			}
 		} else {
 			ref.current.userData.velocity = [vx + dvx, vy + dvy, vz + dvz];
 			ref.current.position.set(x + dx, y + dy, z + dz);
 			ref.current.userData.position = [x + dx, y + dy, z + dz];
 		}
-		// console.log(x)
 	});
 	return (
 		<mesh
