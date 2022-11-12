@@ -72,18 +72,31 @@ function Sphere({
 		if (hitLeft || hitRight || hitBottom) {
 			if (hitBottom) {
 				ref.current.userData.velocity = [vx + dvx, -1 * (vy + dvy) * restitution, vz + dvz];
+
 				ref.current.position.set(x + dx, y, z + dz);
 				ref.current.userData.position = [x + dx, y, z + dz];
 			}
 			if (hitLeft) {
-				ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
-				ref.current.position.set(x, y + dy, z + dz);
-				ref.current.userData.position = [x, y + dy, z + dz];
+				const newVx = -1 * (vx + dvx) * restitution;
+				ref.current.userData.velocity = [newVx, vy + dvy, vz + dvz];
+
+				const dt1 = (wall[0] - x + radius) / (vx + dvx);
+				const dt2 = delta - dt1;
+				const dx2 = newVx * dt2 + radius;
+
+				ref.current.position.set(wall[0] + dx2, y + dy, z + dz);
+				ref.current.userData.position = [wall[0] + dx2, y + dy, z + dz];
 				return;
 			} else if (hitRight) {
-				ref.current.userData.velocity = [-1 * (vx + dvx) * restitution, vy + dvy, vz + dvz];
-				ref.current.position.set(x, y + dy, z + dz);
-				ref.current.userData.position = [x, y + dy, z + dz];
+				const newVx = -1 * (vx + dvx) * restitution;
+				ref.current.userData.velocity = [newVx, vy + dvy, vz + dvz];
+
+				const dt1 = (wall[1] - radius - x) / (vx + dvx);
+				const dt2 = delta - dt1;
+				const dx2 = newVx * dt2 + radius;
+
+				ref.current.position.set(wall[1] - dx2, y + dy, z + dz);
+				ref.current.userData.position = [wall[1] - dx2, y + dy, z + dz];
 			}
 		} else {
 			ref.current.userData.velocity = [vx + dvx, vy + dvy, vz + dvz];
